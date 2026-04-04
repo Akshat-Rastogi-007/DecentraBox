@@ -1,10 +1,13 @@
 package com.codesmashers.decentrabox.exception;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -30,6 +33,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiResponseDto<?>> handleUnauthorized(UnauthorizedException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ApiResponseDto<?>> handleResourceAlreadExists(ResourceAlreadyExistsException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserAuthenticationError.class)
+    public ResponseEntity<ApiResponseDto<?>> handleUserAuthenticationError(UserAuthenticationError ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiResponseDto<?>> handleUsernameNotFound(UsernameNotFoundException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
@@ -69,6 +87,6 @@ public class GlobalExceptionHandler {
     // ── Helper ──────────────────────────────────────────────────────────
 
     private ResponseEntity<ApiResponseDto<?>> buildResponse(String message, HttpStatus status) {
-        return new ResponseEntity<>(new ApiResponseDto<>(null, message, status), status);
+        return new ResponseEntity<>(new ApiResponseDto<>(Collections.EMPTY_MAP, message, status), status);
     }
 }
