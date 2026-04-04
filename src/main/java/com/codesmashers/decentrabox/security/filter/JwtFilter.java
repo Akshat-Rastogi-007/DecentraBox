@@ -33,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private static final List<String> allowedPaths = List.of(
             "/app/public/register/",
-            "/app/public/login");
+            "/app/public/login/");
 
     @SuppressWarnings("unchecked")
     @Override
