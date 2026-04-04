@@ -15,10 +15,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.codesmashers.decentrabox.security.filter.JwtFilter;
 import com.codesmashers.decentrabox.security.user.UserDetailsServiceImpl;
 
 @Configuration
@@ -32,9 +34,12 @@ public class SecurityConfig {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtFilter jwtFilter;
+
     private static final String[] PUBLIC_URLS = {
-            "/register",
-            "/login",
+            "/app/public/register/",
+            "/app/public/login/",
     };
 
     @Bean
@@ -44,10 +49,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_URLS).permitAll()
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
+
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
