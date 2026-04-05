@@ -140,7 +140,7 @@ IPFS (Pinata) Blockchain PostgreSQL AI Service
 ### Backend (Spring Boot)
 
 ```bash
-git clone https://github.com/Akshat-Rastogi-007/decentrabox.git
+git clone https://github.com/Akshat-Rastogi-007/DecentraBox.git
 cd backend
 ./mvnw spring-boot:run
 
