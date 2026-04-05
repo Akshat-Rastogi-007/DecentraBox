@@ -50,6 +50,11 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiResponseDto<?>> handleValidationException(ValidationException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     // ── Spring / Validation Exceptions ──────────────────────────────────
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
