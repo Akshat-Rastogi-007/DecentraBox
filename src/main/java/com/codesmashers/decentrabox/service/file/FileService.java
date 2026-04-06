@@ -1,7 +1,11 @@
 package com.codesmashers.decentrabox.service.file;
 
+import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -12,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.codesmashers.decentrabox.exception.BadRequestException;
+import com.codesmashers.decentrabox.exception.ResourceNotFoundException;
+import com.codesmashers.decentrabox.exception.UnauthorizedException;
 import com.codesmashers.decentrabox.exception.ValidationException;
 import com.codesmashers.decentrabox.model.FileMetaData;
 import com.codesmashers.decentrabox.model.User;
@@ -52,7 +58,7 @@ public class FileService {
             UserDetailsImpl userImpl = getCurrectUser();
 
             if (userImpl == null) {
-                throw new BadRequestException("Token Expired, Kindly login again");
+                throw new BadRequestException("Session Expired, Kindly login again");
             }
 
             User user = userImpl.getUser();
@@ -85,6 +91,85 @@ public class FileService {
         }
     }
 
+    public ResponseEntity<ApiResponseDto<?>> getAllUserFiles() {
+
+        UserDetailsImpl userImpl = getCurrectUser();
+
+        if (userImpl == null) {
+            throw new BadRequestException("Session Expired, Kindly login again");
+
+        }
+
+        User currentUser = userImpl.getUser();
+
+        List<FileMetaData> fList = fDataRepository.findByUser(currentUser);
+
+        return buildResponse(fList, "Files Successfully Retrived", HttpStatus.OK);
+
+    }
+
+    public ResponseEntity<ApiResponseDto<?>> getFIleByCid(String cid){
+
+        UserDetailsImpl userImpl = getCurrectUser();
+
+        if (userImpl == null) {
+            throw new BadRequestException("Session Expired, Kindly login again");
+
+        }
+
+        User user = userImpl.getUser();
+
+        FileMetaData byCid = fDataRepository.findByCid(cid).orElseThrow(() -> new ResourceNotFoundException("No File found by " + cid));
+
+
+        if (!byCid.getUser().getId().equals(user.getId())){
+            throw new UnauthorizedException("You do not have access to this file");
+        }
+        
+                
+        return buildResponse(byCid, "File Retrived Successfully", HttpStatus.OK)
+
+    }
+
+    public ResponseEntity<ApiResponseDto<?>> getSignedUrl(String cid) {
+
+        FileMetaData byCid = fDataRepository.findByCid(cid)
+                .orElseThrow(() -> new ResourceNotFoundException("No File found by " + cid));
+
+        UserDetailsImpl userImpl = getCurrectUser();
+
+        if (userImpl == null) {
+            throw new BadRequestException("Session Expired, Kindly login again");
+
+        }
+
+        User user = userImpl.getUser();
+
+        // owner check
+
+        if (!byCid.getUser().getId().equals(user.getId())) {
+            throw new UnauthorizedException("You do not have access to this file");
+        }
+
+        // blockchain check (is shared with the wallet)
+
+        // will be adding when blockchain logic is added
+
+        // add to cache too
+        if (byCid.getIpfsUrl() != null || byCid.getUrlExpiry().isAfter(LocalDateTime.now()))
+            return buildResponse(byCid.getIpfsUrl(), cid, HttpStatus.OK);
+
+        String signedUrl = ipfsService.generateSignedUrl(cid);
+
+        byCid.setIpfsUrl(signedUrl);
+        byCid.setUrlExpiry(LocalDateTime.now().plusHours(1));
+
+        fDataRepository.save(byCid);
+
+        return buildResponse(signedUrl, "Url retrived successfully", HttpStatus.OK);
+
+    }
+
     private UserDetailsImpl getCurrectUser() {
 
         return (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -108,6 +193,7 @@ public class FileService {
     }
 
     private ResponseEntity<ApiResponseDto<?>> buildResponse(Object data, String message, HttpStatus status) {
-        return new ResponseEntity<>(new ApiResponseDto<>(Collections.EMPTY_MAP, message, status), status);
+        return new ResponseEntity<>(new ApiResponseDto<>(data == null ? Collections.EMPTY_MAP : data, message, status),
+                status);
     }
 }
