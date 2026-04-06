@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.codesmashers.decentrabox.exception.ResourceAlreadyExistsException;
 import com.codesmashers.decentrabox.exception.UserAuthenticationError;
+import com.codesmashers.decentrabox.model.Role;
 import com.codesmashers.decentrabox.model.User;
 import com.codesmashers.decentrabox.model.dto.LoginDto;
 import com.codesmashers.decentrabox.model.dto.UserRequestDto;
@@ -51,6 +52,8 @@ public class UserService {
         User user = modelMapper.map(dto, User.class);
 
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        user.getRoles().add(Role.ROLE_USER);
 
         userRepository.save(user);
 

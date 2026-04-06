@@ -1,4 +1,4 @@
-package com.codesmashers.decentrabox.controller;
+package com.codesmashers.decentrabox.controller.publicApi;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

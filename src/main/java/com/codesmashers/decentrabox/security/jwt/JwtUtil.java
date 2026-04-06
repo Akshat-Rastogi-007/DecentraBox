@@ -57,7 +57,7 @@ public class JwtUtil {
     public Claims getClaims(String jwtToken) {
 
         return Jwts.parserBuilder().setSigningKey(key)
-                .build().parseClaimsJwt(jwtToken).getBody();
+                .build().parseClaimsJws(jwtToken).getBody();
 
     }
 
@@ -75,9 +75,12 @@ public class JwtUtil {
 
     public boolean isValid(String token) {
         try {
-            getClaims(token);
-            return true;
+            Claims claims = getClaims(token);
+
+            return !claims.getExpiration().before(new Date());
+
         } catch (JwtException | IllegalArgumentException e) {
+            e.printStackTrace();
             return false;
         }
     }

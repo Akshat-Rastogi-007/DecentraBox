@@ -51,7 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         }
 
-        if (header == null || !header.startsWith("Bearer")) {
+        if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -59,7 +59,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String jwtToken = header.substring(7).trim();
 
         if (!jwtUtil.isValid(jwtToken)) {
-            sendUnauthorized(response, "Invalid or expired token");
+            sendUnauthorized(response, "Invalid or expired token**");
             return;
         }
 
@@ -74,7 +74,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         List<String> roles = (List<String>) claims.get("roles");
 
-        if (username == null || roles == null) {
+        if (username == null || roles == null || roles.isEmpty()) {
             sendUnauthorized(response, "Malformed token");
             return;
         }
