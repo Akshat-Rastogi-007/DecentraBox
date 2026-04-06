@@ -6,10 +6,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.codesmashers.decentrabox.exception.BadRequestException;
 import com.codesmashers.decentrabox.exception.ResourceAlreadyExistsException;
 import com.codesmashers.decentrabox.exception.UserAuthenticationError;
 import com.codesmashers.decentrabox.model.Role;
@@ -87,6 +89,32 @@ public class UserService {
         return new ResponseEntity<>(
                 new ApiResponseDto<>(jwtToken, "User Loggedin successfully", HttpStatus.OK), HttpStatus.OK);
 
+    }
+
+    public ResponseEntity<ApiResponseDto<?>> getLoggedInUserInfo() {
+
+        UserDetailsImpl userImpl = getCurrentUser();
+
+        if (userImpl == null) {
+            throw new BadRequestException("Token Expired, Kindly login again");
+        }
+
+        User user = userImpl.getUser();
+        UserResponseDto userResponseDto = modelMapper.map(user, UserResponseDto.class);
+
+        return buildResponse(userResponseDto, "User info retrieved successfully", HttpStatus.OK);
+    }
+
+    private UserDetailsImpl getCurrentUser() {
+        try {
+            return (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private ResponseEntity<ApiResponseDto<?>> buildResponse(Object data, String message, HttpStatus status) {
+        return new ResponseEntity<>(new ApiResponseDto<>(data, message, status), status);
     }
 
 }
