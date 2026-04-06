@@ -1,11 +1,9 @@
 package com.codesmashers.decentrabox.service.file;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -108,7 +106,7 @@ public class FileService {
 
     }
 
-    public ResponseEntity<ApiResponseDto<?>> getFIleByCid(String cid){
+    public ResponseEntity<ApiResponseDto<?>> getFIleByCid(String cid) {
 
         UserDetailsImpl userImpl = getCurrectUser();
 
@@ -119,17 +117,15 @@ public class FileService {
 
         User user = userImpl.getUser();
 
-        FileMetaData byCid = fDataRepository.findByCid(cid).orElseThrow(() -> new ResourceNotFoundException("No File found by " + cid));
+        FileMetaData byCid = fDataRepository.findByCid(cid)
+                .orElseThrow(() -> new ResourceNotFoundException("No File found by " + cid));
 
-
-        if (!byCid.getUser().getId().equals(user.getId())){
+        if (!byCid.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException("You do not have access to this file");
         }
-        
-                
 
         // record access async will be done later when blockchain is addded
-        return buildResponse(byCid, "File Retrived Successfully", HttpStatus.OK)
+        return buildResponse(byCid, "File Retrived Successfully", HttpStatus.OK);
 
     }
 
