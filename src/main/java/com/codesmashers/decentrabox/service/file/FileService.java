@@ -3,7 +3,9 @@ package com.codesmashers.decentrabox.service.file;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -154,9 +156,15 @@ public class FileService {
         // will be adding when blockchain logic is added
 
         // add to cache too
-        if (byCid.getIpfsUrl() != null || byCid.getUrlExpiry().isAfter(LocalDateTime.now()))
-            return buildResponse(byCid.getIpfsUrl(), cid, HttpStatus.OK);
 
+        Map<String, Object> data = new HashMap<>();
+
+        if (byCid.getIpfsUrl() != null || byCid.getUrlExpiry().isAfter(LocalDateTime.now())) {
+            data.put("signedUrl", byCid.getIpfsUrl());
+            data.put("expiresAt", byCid.getUrlExpiry());
+
+            return buildResponse(data, cid, HttpStatus.OK);
+        }
         String signedUrl = ipfsService.generateSignedUrl(cid);
 
         byCid.setIpfsUrl(signedUrl);
@@ -164,7 +172,10 @@ public class FileService {
 
         fDataRepository.save(byCid);
 
-        return buildResponse(signedUrl, "Url retrived successfully", HttpStatus.OK);
+        data.put("signedUrl", byCid.getIpfsUrl());
+        data.put("expiresAt", byCid.getUrlExpiry());
+
+        return buildResponse(data, "Url retrived successfully", HttpStatus.OK);
 
     }
 

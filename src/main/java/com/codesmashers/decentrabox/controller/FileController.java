@@ -40,4 +40,10 @@ public class FileController {
         return fileService.getFIleByCid(cid);
     }
 
+    @GetMapping("/{cid}/url")
+    public ResponseEntity<ApiResponseDto<?>> getUrlOfFile(@PathVariable("cid") String cid) {
+
+        return fileService.getSignedUrl(cid);
+    }
+
 }
