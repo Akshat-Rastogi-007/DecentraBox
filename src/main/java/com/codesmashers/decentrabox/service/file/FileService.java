@@ -127,6 +127,8 @@ public class FileService {
         }
         
                 
+
+        // record access async will be done later when blockchain is addded
         return buildResponse(byCid, "File Retrived Successfully", HttpStatus.OK)
 
     }
